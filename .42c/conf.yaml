@@ -1,3 +1,0 @@
-apis:
-  src/swagger/wompi.yaml:
-    alias: wompi-api
