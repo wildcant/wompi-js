@@ -601,8 +601,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
 
-
-
 # Components
 components:
   schemas:

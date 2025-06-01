@@ -16,5 +16,5 @@ export const payoutsInstance = <T>(
 	return AXIOS_INSTANCE({
 		...config,
 		...options,
-	})
+	}).then((response) => response.data)
 }

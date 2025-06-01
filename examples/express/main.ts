@@ -7,8 +7,10 @@ import {
 	getBanks,
 	getMerchantsMerchantPublicKey,
 	getPaymentSourcesPaymentSourceId,
+	getRefundsRefundId,
 	getTransactionsTransactionId,
 	postPaymentSources,
+	postRefunds,
 	postTokensCards,
 	postTokensNequi,
 	postTransactions,
@@ -20,14 +22,13 @@ import {
 	hashSignature,
 	sandbox,
 } from './utils'
-
-// axios.defaults.baseURL = config.WOMPI_URL
-// axios.defaults.headers.common.Authorization = `Bearer ${config.WOMPI_PRIVATE_API_KEY}`
+import { defaultInstance } from '../../src/api/default-instance'
 
 const app = express()
 
 app.use(express.json())
 
+// e.g. http://localhost:3000/merchant
 app.get('/merchant', async (_req, res) => {
 	getMerchantsMerchantPublicKey(config.WOMPI_PUBLIC_API_KEY)
 		.then(({ data }) => res.json(data))
@@ -40,9 +41,9 @@ const TransactionSchema = z.object({
 	recurrent: z.enum(['true', 'false']).optional(),
 })
 
-// e.g. http://localhost:3000/?amount=2500000&payment_source_id=181384 (nequi)
+// e.g. http://localhost:3000/transaction?amount=2500000&payment_source_id=181384 (nequi)
 // e.g. http://localhost:3000/?amount=2500000&payment_source_id=181387 (card)
-// e.g. http://localhost:3000/?amount=1500000&payment_source_id=181387&recurrent=true (card)
+// e.g. http://localhost:3000/transaction?amount=1500000&payment_source_id=181387&recurrent=true (card)
 app.get('/transaction', async (req, res) => {
 	const { amount, payment_source_id, recurrent } = TransactionSchema.parse(
 		req.query,
@@ -176,6 +177,37 @@ app.get('/payment-source/card', async (req, res) => {
 app.post('/webhook', (req, res) => {
 	res.json('TODO')
 })
+
+/****** Refunds ******/
+app.get('/refund/:transaction_id', async (req, res) => {
+	const { data: transaction } = await getTransactionsTransactionId(
+		req.params.transaction_id,
+	)
+
+	if (!transaction) throw new Error('Transaction not found')
+
+	if (transaction.status !== 'APPROVED')
+		throw new Error('Transaction is not approved')
+
+	if (!transaction.amount_in_cents)
+		throw new Error('Transaction amount_in_cents is missing')
+
+	postRefunds({
+		transaction_id: req.params.transaction_id,
+		amount_in_cents: transaction.amount_in_cents / 2,
+	})
+		.then(({ data }) => res.json(data))
+		.catch(handleError(res))
+})
+
+// e.g. http://localhost:3000/refunds/12159
+app.get('/refunds/:refund_id', (req, res) => {
+	getRefundsRefundId(Number(req.params.refund_id))
+		.then(({ data }) => res.json(data))
+		.catch(handleError(res))
+})
+
+/****** Payouts ******/
 
 app.get('/banks', (req, res) => {
 	getBanks({

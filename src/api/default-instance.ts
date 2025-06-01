@@ -15,5 +15,5 @@ export const defaultInstance = <T>(
 	return AXIOS_INSTANCE({
 		...config,
 		...options,
-	})
+	}).then((response) => response.data)
 }

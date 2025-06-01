@@ -32,6 +32,7 @@ export const hashSignature = async (signature: string) => {
 }
 
 export const handleError = (res: express.Response) => (error: unknown) => {
+	console.error(error)
 	if (axios.isAxiosError(error)) {
 		res
 			.status(500)
