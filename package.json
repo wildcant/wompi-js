@@ -1,0 +1,29 @@
+{
+	"name": "wompi-js",
+	"description": "Wompi API wrapper",
+	"packageManager": "yarn@4.9.1",
+	"scripts": {
+		"generate": "orval --config ./orval.config.ts",
+		"format": "biome format --unsafe --write *.ts",
+		"lint": "biome lint *.ts",
+		"format:fix": "biome check --fix --unsafe --no-errors-on-unmatched ",
+		"dev": "dotenvx run -- tsx --watch examples/express/main.ts"
+	},
+	"dependencies": {
+		"@dotenvx/dotenvx": "^1.44.1",
+		"@paralleldrive/cuid2": "^2.2.2",
+		"@t3-oss/env-core": "^0.13.6",
+		"axios": "^1.9.0",
+		"express": "^5.1.0",
+		"lodash": "^4.17.21",
+		"zod": "^3.25.42"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/express": "^5",
+		"@types/lodash": "^4",
+		"orval": "^7.9.0",
+		"tsx": "^4.19.4",
+		"typescript": "^5.8.3"
+	}
+}

@@ -1,0 +1,1920 @@
+# Source: https://app.swaggerhub.com/apis/wompi/Payouts/1.0.0
+{
+  "openapi": "3.0.2",
+  "info":
+    {
+      "title": "Payouts API",
+      "description": "API público para realizar pagos a terceros través de Wompi.",
+      "version": "1.0.0",
+    },
+  "servers":
+    [
+      { "url": "https://api.payouts.wompi.co/v1" },
+      { "url": "https://api.sandbox.payouts.wompi.co/v1" },
+    ],
+  "tags": [{ "name": "Payouts", "description": "Payouts API" }],
+  "paths":
+    {
+      "/payouts":
+        {
+          "post":
+            {
+              "tags": ["Payouts"],
+              "summary": "Crear una orden de pago.",
+              "description": "Crea una nueva orden de pago.",
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "application/json":
+                        {
+                          "schema":
+                            {
+                              "oneOf":
+                                [
+                                  {
+                                    "$ref": "#/components/schemas/CreateImmediatePayout",
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/CreateScheduledPayout",
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/CreateRecurringPayout",
+                                  },
+                                ],
+                            },
+                        },
+                    },
+                  "required": true,
+                },
+              "responses":
+                {
+                  "201":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "$ref": "#/components/schemas/PayoutCreateResponse",
+                                },
+                            },
+                        },
+                    },
+                  "403": { "description": "Forbidden" },
+                  "400":
+                    {
+                      "description": "Error al crear el pago",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "$ref": "#/components/schemas/CreatePayoutError",
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+          "get":
+            {
+              "tags": ["Queries"],
+              "summary": "Regresa todos los lotes.",
+              "description": "Regresa todos los lotes con soporte de paginación.",
+              "parameters":
+                [
+                  {
+                    "name": "status",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": true,
+                    "schema":
+                      {
+                        "type": "array",
+                        "items":
+                          {
+                            "type": "string",
+                            "enum":
+                              [
+                                "PENDING",
+                                "REJECTED",
+                                "TOTAL_PAYMENT",
+                                "PARTIAL_PAYMENT",
+                                "PENDING_APPROVAL",
+                                "NOT_APPROVED",
+                                "AFE_REJECTED",
+                                "AFE_ON_HOLD",
+                              ],
+                          },
+                      },
+                  },
+                  {
+                    "name": "fromDate",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema": { "type": "string", "format": "2024-01-01" },
+                  },
+                  {
+                    "name": "toDate",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema": { "type": "string", "format": "2024-01-01" },
+                  },
+                  {
+                    "name": "reference",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema": { "type": "string" },
+                  },
+                  {
+                    "name": "id",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema": { "type": "string" },
+                  },
+                  {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "schema": { "type": "integer", "default": 1, "minimum": 1 },
+                    "description": "Número de la página que se quiere consultar.",
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "schema":
+                      { "type": "integer", "default": 10, "minimum": 1 },
+                    "description": "Cantidad de elementos por página.",
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "page":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 1,
+                                                },
+                                              "limit":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 10,
+                                                },
+                                              "total":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 53,
+                                                },
+                                              "pages":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 6,
+                                                },
+                                              "records":
+                                                {
+                                                  "type": "array",
+                                                  "items":
+                                                    {
+                                                      "$ref": "#/components/schemas/PayoutResponse",
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/payouts/file":
+        {
+          "post":
+            {
+              "tags": ["Payouts"],
+              "summary": "Crea una orden de pago desde un archivo.",
+              "description": "Crea una nueva orden de pago a partir de un archivo.",
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "multipart/form-data":
+                        {
+                          "schema":
+                            {
+                              "$ref": "#/components/schemas/payouts_file_body",
+                            },
+                        },
+                    },
+                  "required": true,
+                },
+              "responses":
+                {
+                  "201":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "$ref": "#/components/schemas/PayoutCreateResponse",
+                                },
+                            },
+                        },
+                    },
+                  "403": { "description": "Forbidden" },
+                  "400":
+                    {
+                      "description": "Error al crear el pago",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "$ref": "#/components/schemas/CreatePayoutError",
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/banks":
+        {
+          "get":
+            {
+              "tags": ["Resources"],
+              "summary": "Regresa la lista de bancos.",
+              "description": "Regresa la lista de bancos disponibles para realizar pagos.",
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "array",
+                                  "items":
+                                    {
+                                      "$ref": "#/components/schemas/inline_response_200",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/accounts":
+        {
+          "get":
+            {
+              "tags": ["Resources"],
+              "summary": "Regresa la lista de cuentas.",
+              "description": "Regresa la lista de cuentas disponibles para dispersar los pagos.",
+              "parameters":
+                [
+                  {
+                    "name": "bankCodes",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema":
+                      { "type": "array", "items": { "type": "string" } },
+                  },
+
+                  {
+                    "name": "status",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema":
+                      {
+                        "type": "array",
+                        "items":
+                          {
+                            "type": "string",
+                            "enum": ["IN_REVIEW", "ACTIVE", "INACTIVE"],
+                          },
+                      },
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "type": "array",
+                                          "items":
+                                            {
+                                              "$ref": "#/components/schemas/inline_response_200_1",
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/limits":
+        {
+          "get":
+            {
+              "tags": ["Resources"],
+              "summary": "Regresa los límites y transacciones.",
+              "description": "Regresa los límites diarios, incluyendo el tope diario, disponible y consumido. En caso de tener un plan por suscripción, también regresará las transacciones asociadas al plan.",
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "$ref": "#/components/schemas/LimitsResponse",
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/payouts/{payoutId}":
+        {
+          "get":
+            {
+              "tags": ["Queries"],
+              "summary": "Regresa un lote específico.",
+              "description": "Regresa la información de un lote específico utilizando su identificador único.",
+              "parameters":
+                [
+                  {
+                    "name": "payoutId",
+                    "in": "path",
+                    "required": true,
+                    "style": "simple",
+                    "explode": false,
+                    "schema": { "type": "string", "format": "uuid" },
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "$ref": "#/components/schemas/PayoutResponse",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                  "400":
+                    {
+                      "description": "El payoutId no es válido o se presentó un error de negocio.",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 400 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "00000000-0000-0000-0000-000000000000",
+                                                },
+                                            },
+                                        },
+                                      "code":
+                                        {
+                                          "type": "string",
+                                          "example": "EXC_002",
+                                        },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Se presentó error de negocio procesando la solicitud.",
+                                        },
+                                      "type":
+                                        {
+                                          "type": "string",
+                                          "example": "Technical",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/payouts/{payoutId}/transactions":
+        {
+          "get":
+            {
+              "tags": ["Queries"],
+              "summary": "Regresa todas las transacciones de un lote específico.",
+              "description": "Regresa la información de todas las transacciones de un lote, utilizando el identificador único del lote, con soporte de paginación.",
+              "parameters":
+                [
+                  {
+                    "name": "payoutId",
+                    "in": "path",
+                    "required": true,
+                    "style": "simple",
+                    "explode": false,
+                    "schema": { "type": "string", "format": "uuid" },
+                  },
+                  {
+                    "name": "reference",
+                    "in": "query",
+                    "required": false,
+                    "schema": { "type": "string" },
+                  },
+                  {
+                    "name": "status",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema":
+                      {
+                        "type": "array",
+                        "items":
+                          {
+                            "type": "string",
+                            "enum":
+                              [
+                                "READY_TO_FILE",
+                                "ADDED_TO_FILE",
+                                "PROCESSING",
+                                "PENDING",
+                                "APPROVED",
+                                "FAILED",
+                                "REJECTED",
+                              ],
+                          },
+                      },
+                  },
+                  {
+                    "name": "accountNumber",
+                    "in": "query",
+                    "required": false,
+                    "schema":
+                      {
+                        "type": "string",
+                        "maxLength": 40,
+                        "pattern": "^[0-9]+$",
+                      },
+                  },
+                  {
+                    "name": "payeeName",
+                    "in": "query",
+                    "required": false,
+                    "schema": { "type": "string", "maxLength": 40 },
+                  },
+                  {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "schema": { "type": "integer", "default": 1, "minimum": 1 },
+                    "description": "Número de la página que se quiere consultar.",
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "schema":
+                      { "type": "integer", "default": 10, "minimum": 1 },
+                    "description": "Cantidad de elementos por página.",
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "page":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 1,
+                                                },
+                                              "limit":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 10,
+                                                },
+                                              "total":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 53,
+                                                },
+                                              "pages":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 6,
+                                                },
+                                              "records":
+                                                {
+                                                  "type": "array",
+                                                  "items":
+                                                    {
+                                                      "$ref": "#/components/schemas/TransactionResponse_1",
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                  "400":
+                    {
+                      "description": "El payoutId no es válido o se presentó un error de negocio.",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 400 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "00000000-0000-0000-0000-000000000000",
+                                                },
+                                            },
+                                        },
+                                      "code":
+                                        {
+                                          "type": "string",
+                                          "example": "EXC_002",
+                                        },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Se presentó error de negocio procesando la solicitud.",
+                                        },
+                                      "type":
+                                        {
+                                          "type": "string",
+                                          "example": "Technical",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/payouts/{payoutId}/transactions/{transactionId}":
+        {
+          "get":
+            {
+              "tags": ["Queries"],
+              "summary": "Regresa una transacción específica de un lote específico.",
+              "description": "Regresa la información de una transacción específica de un lote, utilizando los identificadores únicos del lote y la transacción.",
+              "parameters":
+                [
+                  {
+                    "name": "payoutId",
+                    "in": "path",
+                    "required": true,
+                    "style": "simple",
+                    "explode": false,
+                    "schema": { "type": "string", "format": "uuid" },
+                  },
+                  {
+                    "name": "transactionId",
+                    "in": "path",
+                    "required": true,
+                    "style": "simple",
+                    "explode": false,
+                    "schema": { "type": "string", "format": "uuid" },
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "$ref": "#/components/schemas/TransactionResponse",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                  "400":
+                    {
+                      "description": "El payoutId/transactionId no es válido o se presentó un error de negocio.",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 400 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "00000000-0000-0000-0000-000000000000",
+                                                },
+                                            },
+                                        },
+                                      "code":
+                                        {
+                                          "type": "string",
+                                          "example": "EXC_002",
+                                        },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Se presentó error de negocio procesando la solicitud.",
+                                        },
+                                      "type":
+                                        {
+                                          "type": "string",
+                                          "example": "Technical",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/transactions/{reference}":
+        {
+          "get":
+            {
+              "tags": ["Queries"],
+              "summary": "Regresa todas las transacciones de una referencia específica.",
+              "description": "Regresa la información de todas las transacciones de un lote, utilizando la referencia del lote, con soporte de paginación.",
+              "parameters":
+                [
+                  {
+                    "name": "reference",
+                    "in": "path",
+                    "required": true,
+                    "style": "simple",
+                    "explode": false,
+                    "schema": { "type": "string" },
+                  },
+                  {
+                    "name": "status",
+                    "in": "query",
+                    "required": false,
+                    "style": "form",
+                    "explode": true,
+                    "schema":
+                      {
+                        "type": "array",
+                        "items":
+                          {
+                            "type": "string",
+                            "enum":
+                              [
+                                "READY_TO_FILE",
+                                "ADDED_TO_FILE",
+                                "PROCESSING",
+                                "PENDING",
+                                "APPROVED",
+                                "FAILED",
+                                "REJECTED",
+                              ],
+                          },
+                      },
+                  },
+                  {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "schema": { "type": "integer", "default": 1, "minimum": 1 },
+                    "description": "Número de la página que se quiere consultar.",
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "schema":
+                      { "type": "integer", "default": 10, "minimum": 1 },
+                    "description": "Cantidad de elementos por página.",
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "page":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 1,
+                                                },
+                                              "limit":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 10,
+                                                },
+                                              "total":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 53,
+                                                },
+                                              "pages":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 6,
+                                                },
+                                              "records":
+                                                {
+                                                  "type": "array",
+                                                  "items":
+                                                    {
+                                                      "$ref": "#/components/schemas/TransactionResponse_1",
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                  "400":
+                    {
+                      "description": "La referencia no es válida o se presentó un error de negocio.",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 400 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "00000000-0000-0000-0000-000000000000",
+                                                },
+                                            },
+                                        },
+                                      "code":
+                                        {
+                                          "type": "string",
+                                          "example": "EXC_002",
+                                        },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Se presentó error de negocio procesando la solicitud.",
+                                        },
+                                      "type":
+                                        {
+                                          "type": "string",
+                                          "example": "Technical",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/reports/payouts":
+        {
+          "get":
+            {
+              "tags": ["Reports"],
+              "summary": "Regresa todos los reportes.",
+              "description": "Regresa todos los reportes con soporte de paginación y filtros.",
+              "parameters":
+                [
+                  {
+                    "name": "page",
+                    "in": "query",
+                    "required": false,
+                    "schema": { "type": "integer", "default": 1, "minimum": 1 },
+                    "description": "Número de la página que se quiere consultar.",
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "schema":
+                      { "type": "integer", "default": 10, "minimum": 1 },
+                    "description": "Cantidad de elementos por página.",
+                  },
+                  {
+                    "name": "periodicity",
+                    "in": "query",
+                    "required": true,
+                    "style": "form",
+                    "explode": true,
+                    "schema":
+                      {
+                        "type": "string",
+                        "enum": ["daily", "weekly", "biweekly", "monthly"],
+                      },
+                  },
+                  {
+                    "name": "reportType",
+                    "in": "query",
+                    "required": true,
+                    "style": "form",
+                    "explode": true,
+                    "schema":
+                      { "type": "string", "enum": ["payouts", "transactions"] },
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "reports":
+                                                {
+                                                  "type": "array",
+                                                  "items":
+                                                    {
+                                                      "$ref": "#/components/schemas/ReportsPayoutsResponse",
+                                                    },
+                                                },
+                                              "total":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 53,
+                                                },
+                                              "pages":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 6,
+                                                },
+                                              "limit":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 10,
+                                                },
+                                              "page":
+                                                {
+                                                  "type": "integer",
+                                                  "example": 1,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/reports/presigned_url":
+        {
+          "get":
+            {
+              "tags": ["Reports"],
+              "summary": "Obtener CSV de un reporte.",
+              "description": "Obtener CSV de un reporte.",
+              "parameters":
+                [
+                  {
+                    "name": "reportExecutionId",
+                    "in": "query",
+                    "required": true,
+                    "style": "form",
+                    "explode": true,
+                    "schema": { "type": "string" },
+                  },
+                  {
+                    "name": "reportIntegration",
+                    "in": "query",
+                    "required": true,
+                    "style": "form",
+                    "explode": true,
+                    "schema":
+                      {
+                        "type": "string",
+                        "enum": ["payouts", "merchant_reports"],
+                      },
+                  },
+                ],
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "object",
+                                  "properties":
+                                    {
+                                      "status":
+                                        { "type": "integer", "example": 200 },
+                                      "meta":
+                                        {
+                                          "type": "object",
+                                          "properties":
+                                            {
+                                              "trace_id":
+                                                {
+                                                  "type": "string",
+                                                  "format": "uuid",
+                                                  "example": "2796d870-21e5-11f0-805b-4b055319fe18",
+                                                },
+                                            },
+                                          "required": ["trace_id"],
+                                        },
+                                      "code":
+                                        { "type": "string", "example": "OK" },
+                                      "message":
+                                        {
+                                          "type": "string",
+                                          "example": "Solicitud ejecutada correctamente.",
+                                        },
+                                      "data":
+                                        {
+                                          "type": "string",
+                                          "example": "https://api.co.dev.wompi.dev/v1/assets/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidWNrZXQiOiJzMy1wYXlvdXRzLXJlcG9ydHMtdGo5c2l6c2s5N3Z4IiwiZmlsZV9uYW1lIjoicGF5b3V0cy80ZjI4OTY3Zi0zOGY5LTRhOTYtODY4My0wNzRmNGNlMjgwOGYvd2Vla2x5LzY3YmMzN2QyNGE1OTIyOTdhYjM2NjhkNS5jc3YiLCJleHAiOjE3NDY1NDEyMjksImlhdCI6MTc0NjU0MTEwOX0.4FhydEoxsN-x3INJmWsQD8tZs-yvV0fugStxhOh3oLx",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+      "/accounts/balance-recharge":
+        {
+          "post":
+            {
+              "tags": ["Sandbox"],
+              "summary": "Recargar cuenta.",
+              "description": "Recargar la cuenta bancaria con un monto en centavos",
+              "parameters": [],
+              "requestBody":
+                {
+                  "content":
+                    {
+                      "application/json":
+                        {
+                          "schema":
+                            { "$ref": "#/components/schemas/BalanceRecharge" },
+                        },
+                    },
+                  "required": true,
+                },
+              "responses":
+                {
+                  "200":
+                    {
+                      "description": "OK",
+                      "content":
+                        {
+                          "application/json":
+                            {
+                              "schema":
+                                {
+                                  "type": "array",
+                                  "items":
+                                    {
+                                      "$ref": "#/components/schemas/inline_response_200_1",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+              "security": [{ "x-api-key": [], "user-principal-id": [] }],
+            },
+        },
+    },
+  "components":
+    {
+      "schemas":
+        {
+          "CreateImmediatePayout":
+            {
+              "required":
+                ["accountId", "paymentType", "reference", "transactions"],
+              "type": "object",
+              "properties":
+                {
+                  "reference": { "type": "string", "example": "reference" },
+                  "accountId": { "type": "string", "example": "account-id" },
+                  "paymentType":
+                    {
+                      "type": "string",
+                      "example": "PAYROLL",
+                      "enum": ["PAYROLL", "PROVIDERS", "OTHER"],
+                    },
+                  "transactionStatus":
+                    {
+                      "type": "string",
+                      "description": "Solo en sandbox. Emular el estado final de la transacción.",
+                      "enum": ["APPROVED", "FAILED"],
+                      "example": "FAILED // solo Sandbox",
+                    },
+                  "transactions":
+                    {
+                      "type": "array",
+                      "items":
+                        { "$ref": "#/components/schemas/CreateTransaction" },
+                    },
+                },
+            },
+          "CreateScheduledPayout":
+            {
+              "allOf":
+                [
+                  { "$ref": "#/components/schemas/CreateImmediatePayout" },
+                  {
+                    "type": "object",
+                    "required": ["dispersionDatetime"],
+                    "properties":
+                      {
+                        "dispersionDatetime":
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-05-05T12:30",
+                          },
+                      },
+                  },
+                ],
+            },
+          "CreateRecurringPayout":
+            {
+              "allOf":
+                [
+                  { "$ref": "#/components/schemas/CreateScheduledPayout" },
+                  {
+                    "type": "object",
+                    "required": ["recurring"],
+                    "properties":
+                      {
+                        "recurring":
+                          {
+                            "type": "object",
+                            "required": ["interval", "months"],
+                            "properties":
+                              {
+                                "interval":
+                                  {
+                                    "type": "string",
+                                    "enum": ["biweek", "month"],
+                                  },
+                                "months":
+                                  { "type": "integer", "enum": [3, 6, 12] },
+                                "description":
+                                  {
+                                    "type": "string",
+                                    "example": "Nómina colaboradores",
+                                  },
+                              },
+                          },
+                      },
+                  },
+                ],
+            },
+          "PayoutCreateResponse":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "status": { "type": "integer", "example": 201 },
+                  "meta":
+                    {
+                      "$ref": "#/components/schemas/PayoutCreateResponse_meta",
+                    },
+                  "code": { "type": "string", "example": "OK" },
+                  "message":
+                    {
+                      "type": "string",
+                      "example": "Solicitud ejecutada correctamente.",
+                    },
+                  "data":
+                    {
+                      "$ref": "#/components/schemas/PayoutCreateResponse_data",
+                    },
+                },
+            },
+          "CreateTransaction":
+            {
+              "required":
+                [
+                  "accountNumber",
+                  "accountType",
+                  "amount",
+                  "bankId",
+                  "legalId",
+                  "legalIdType",
+                  "name",
+                  "personType",
+                ],
+              "type": "object",
+              "properties":
+                {
+                  "legalIdType":
+                    {
+                      "type": "string",
+                      "example": "CC",
+                      "enum": ["CC", "NIT", "PP", "CE", "TI", "DNI"],
+                    },
+                  "legalId": { "type": "string", "example": "1234567890" },
+                  "bankId": { "type": "string", "example": "bankId" },
+                  "accountType":
+                    {
+                      "type": "string",
+                      "example": "AHORROS",
+                      "enum": ["AHORROS", "CORRIENTE", "DEPOSITO_ELECTRONICO"],
+                    },
+                  "accountNumber":
+                    { "type": "string", "example": "1234567890" },
+                  "name": { "type": "string", "example": "John Doe" },
+                  "amount": { "type": "integer", "example": 1000 },
+                  "personType":
+                    {
+                      "type": "string",
+                      "example": "NATURAL",
+                      "enum": ["NATURAL", "JURIDICA"],
+                    },
+                  "description": { "type": "string", "example": "description" },
+                  "phone": { "type": "string", "example": "1234567890" },
+                  "email": { "type": "string", "example": "email@example.com" },
+                  "reference": { "type": "string", "example": "ref1234567890" },
+                },
+            },
+          "CreatePayoutError":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "code": { "type": "string", "example": "EXC_003" },
+                  "message":
+                    {
+                      "type": "string",
+                      "example": "Se ha alcanzado el límite de lotes diarios.",
+                    },
+                  "type": { "type": "string", "example": "Business" },
+                  "meta":
+                    {
+                      "$ref": "#/components/schemas/PayoutCreateResponse_meta",
+                    },
+                },
+            },
+          "payouts_file_body":
+            {
+              "required":
+                ["accountId", "file", "fileType", "paymentType", "reference"],
+              "type": "object",
+              "properties":
+                {
+                  "reference": { "type": "string", "example": "reference" },
+                  "fileType":
+                    {
+                      "type": "string",
+                      "example": "WOMPI",
+                      "enum":
+                        [
+                          "WOMPI",
+                          "PAB",
+                          "DISFON",
+                          "BANCO_OCCIDENTE_FC",
+                          "DAVIVIENDA",
+                          "SAP",
+                        ],
+                    },
+                  "file": { "type": "string", "format": "binary" },
+                  "accountId": { "type": "string", "example": "account-id" },
+                  "paymentType":
+                    {
+                      "type": "string",
+                      "example": "PAYROLL",
+                      "enum": ["PAYROLL", "PROVIDERS", "OTHER"],
+                    },
+                  "transactionStatus":
+                    {
+                      "type": "string",
+                      "description": "Solo en sandbox. Emular el estado final de la transacción.",
+                      "example": "FAILED",
+                      "enum": ["APPROVED", "FAILED"],
+                    },
+                  "dispersionDatetime":
+                    { "type": "string", "format": "date-time" },
+                  "interval": { "type": "string", "enum": ["biweek", "month"] },
+                  "months": { "type": "integer", "enum": [3, 6, 12] },
+                  "description": { "type": "string" },
+                },
+            },
+          "inline_response_200":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "id":
+                    {
+                      "type": "string",
+                      "example": "00000000-0000-0000-0000-000000000000",
+                    },
+                  "name": { "type": "string", "example": "Bancolombia" },
+                  "code": { "type": "string", "example": "BANCOLOMBIA" },
+                  "achCode": { "type": "integer", "example": "1507" },
+                  "swiftCode": { "type": "string", "example": null },
+                  "allowedForOrigin": { "type": "boolean", "example": true },
+                  "isElectronicDeposit": { "type": "boolean", "example": true },
+                  "createdAt":
+                    { "type": "string", "example": "2024-01-01T23:23:23.322Z" },
+                  "updatedAt":
+                    { "type": "string", "example": "2024-02-01T23:23:23.322Z" },
+                },
+            },
+          "accounts_bank":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "code": { "type": "string", "example": "code" },
+                  "name": { "type": "string", "example": "name" },
+                },
+            },
+          "inline_response_200_1":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "id":
+                    {
+                      "type": "string",
+                      "example": "00000000-0000-0000-0000-000000000000",
+                    },
+                  "balanceInCents": { "type": "integer", "example": 1000 },
+                  "number": { "type": "string", "example": "****7890" },
+                  "status": { "type": "string", "example": "ACTIVE" },
+                  "accountType":
+                    {
+                      "type": "string",
+                      "example": "AHORROS",
+                      "enum": ["AHORROS", "CORRIENTE", "DEPOSITO_ELECTRONICO"],
+                    },
+                  "bank": { "$ref": "#/components/schemas/accounts_bank" },
+                  "updatedAt":
+                    { "type": "string", "example": "2024-01-01T23:23:23.322Z" },
+                },
+            },
+          "PayoutCreateResponse_meta":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "trace_id":
+                    {
+                      "type": "string",
+                      "example": "00000000-0000-0000-0000-000000000000",
+                    },
+                },
+            },
+          "PayoutCreateResponse_data":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "payoutId":
+                    {
+                      "type": "string",
+                      "example": "00000000-0000-0000-0000-000000000000",
+                    },
+                  "transactions": { "type": "integer", "example": 3 },
+                  "success": { "type": "integer", "example": 1 },
+                  "failed": { "type": "integer", "example": 2 },
+                },
+            },
+          "PayoutResponse":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "id":
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "2b184a70-1947-11f0-b2d8-1337d22b135c",
+                    },
+                  "reference": { "type": "string", "example": "reference" },
+                  "type": { "type": "string", "example": "INMEDIATE" },
+                  "amountInCents": { "type": "integer", "example": 300 },
+                  "status": { "type": "string", "example": "REJECTED" },
+                  "payerInfo":
+                    {
+                      "type": "object",
+                      "properties":
+                        {
+                          "name":
+                            {
+                              "type": "string",
+                              "example": "PruebasAPIsPayout",
+                            },
+                          "email":
+                            {
+                              "type": "string",
+                              "format": "email",
+                              "example": "luisa.aguilar+pruebasapis@wompi.com",
+                            },
+                          "phone":
+                            { "type": "string", "example": "3125215252" },
+                          "legalId":
+                            { "type": "string", "example": "123456789" },
+                          "personType":
+                            { "type": "string", "example": "NATURAL" },
+                          "legalIdType": { "type": "string", "example": "CC" },
+                        },
+                      "required":
+                        [
+                          "name",
+                          "email",
+                          "phone",
+                          "legalId",
+                          "personType",
+                          "legalIdType",
+                        ],
+                    },
+                  "statusMessage": { "type": "string", "example": "" },
+                  "totalTransactions": { "type": "integer", "example": 3 },
+                  "dispersionDatetime":
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-14T20:43:00.000Z",
+                    },
+                  "paymentType": { "type": "string", "example": "PROVIDERS" },
+                  "createdAt":
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-14T20:43:00.000Z",
+                    },
+                },
+              "required":
+                [
+                  "id",
+                  "reference",
+                  "type",
+                  "amountInCents",
+                  "status",
+                  "payerInfo",
+                  "statusMessage",
+                  "totalTransactions",
+                  "dispersionDatetime",
+                  "paymentType",
+                  "createdAt",
+                ],
+            },
+          "TransactionResponse":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "id":
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "00000000-0000-0000-0000-000000000000",
+                    },
+                  "amountInCents": { "type": "integer", "example": 700000 },
+                  "status":
+                    {
+                      "type": "string",
+                      "example": "ADDED_TO_FILE",
+                      "enum":
+                        [
+                          "PENDING",
+                          "APPROVED",
+                          "CANCELLED",
+                          "FAILED",
+                          "READY_TO_FILE",
+                          "UNKNOWN",
+                          "ADDED_TO_FILE",
+                          "PROCESSING",
+                        ],
+                    },
+                  "payeeInfo": { "$ref": "#/components/schemas/PayeeInfo" },
+                  "fee": { "$ref": "#/components/schemas/FeeInfo" },
+                  "reference": { "type": "string", "example": "example" },
+                  "failureReason":
+                    { "type": "string", "nullable": true, "example": null },
+                  "appliedAt":
+                    { "type": "string", "example": "2024-01-01T23:23:23.322Z" },
+                  "createdAt":
+                    { "type": "string", "example": "2024-01-01T23:23:23.322Z" },
+                  "payout": { "$ref": "#/components/schemas/PayoutResponse" },
+                },
+            },
+          "TransactionResponse_1":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "id":
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "00000000-0000-0000-0000-000000000000",
+                    },
+                  "amountInCents": { "type": "integer", "example": 700000 },
+                  "status":
+                    {
+                      "type": "string",
+                      "example": "ADDED_TO_FILE",
+                      "enum":
+                        [
+                          "PENDING",
+                          "APPROVED",
+                          "CANCELLED",
+                          "FAILED",
+                          "UNKNOWN",
+                        ],
+                    },
+                  "payeeInfo": { "$ref": "#/components/schemas/PayeeInfo" },
+                  "fee": { "$ref": "#/components/schemas/FeeInfo" },
+                  "failureReason":
+                    { "type": "string", "nullable": true, "example": null },
+                  "reference": { "type": "string", "example": "example" },
+                  "appliedAt":
+                    { "type": "string", "example": "2024-01-01T23:23:23.322Z" },
+                  "createdAt":
+                    { "type": "string", "example": "2024-01-01T23:23:23.322Z" },
+                },
+            },
+          "PayeeInfo":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "bank": { "type": "string", "example": "Daviplata" },
+                  "name": { "type": "string", "example": "example1234" },
+                  "email":
+                    {
+                      "type": "string",
+                      "format": "email",
+                      "example": "email@example.com",
+                    },
+                  "legalId": { "type": "string", "example": "123123123" },
+                  "bankCode": { "type": "string", "example": "DAVIPLATA" },
+                  "accountType":
+                    {
+                      "type": "string",
+                      "example": "AHORROS",
+                      "enum": ["AHORROS", "CORRIENTE", "DEPOSITO_ELECTRONICO"],
+                    },
+                  "legalIdType":
+                    {
+                      "type": "string",
+                      "example": "CC",
+                      "enum": ["CC", "NIT", "PP", "CE", "TI", "DNI"],
+                    },
+                  "accountNumber": { "type": "string", "example": "12312312" },
+                },
+            },
+          "FeeInfo":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "feeInCents": { "type": "integer", "example": 0 },
+                  "vatPercentage": { "type": "integer", "example": 0 },
+                  "gmfInCents": { "type": "integer", "example": 0 },
+                  "dynamicFeeInCents": { "type": "integer", "example": 0 },
+                  "vatInCents": { "type": "integer", "example": 0 },
+                  "totalInCents": { "type": "integer", "example": 100000 },
+                },
+            },
+          "LimitsResponse":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "numberOfTransactionsConsumed":
+                    { "type": "integer", "example": 22 },
+                  "limits":
+                    {
+                      "type": "object",
+                      "properties":
+                        {
+                          "dailyLimit":
+                            { "type": "integer", "example": 1500000000 },
+                          "dailyAvailable":
+                            { "type": "integer", "example": 1499800000 },
+                          "dailyConsumed":
+                            { "type": "integer", "example": 200000 },
+                        },
+                    },
+                },
+            },
+          "BalanceRecharge":
+            {
+              "required": ["accountId", "amountInCents"],
+              "type": "object",
+              "properties":
+                {
+                  "accountId": { "type": "string", "example": "account-id" },
+                  "amountInCents":
+                    {
+                      "type": "integer",
+                      "example": 215000,
+
+                      "description": "Monto a recargar en centavos",
+                      "minimum": 10000,
+                      "maximum": 1000000000,
+                    },
+                },
+            },
+          "ReportsPayoutsResponse":
+            {
+              "type": "object",
+              "properties":
+                {
+                  "_id":
+                    { "type": "string", "example": "67bc37d24a592297ab3668d2" },
+                  "reportId":
+                    { "type": "string", "example": "67110129c29cb652c20a4052" },
+                  "runAt":
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-14T20:43:00.000Z",
+                    },
+                  "status": { "type": "string", "example": "finished" },
+                  "stackTrace": { "type": "string", "example": "" },
+                  "queryStartDate":
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-14T20:43:00.000Z",
+                    },
+                  "queryEndDate":
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2025-04-14T20:43:00.000Z",
+                    },
+                  "fileBucketKey":
+                    {
+                      "type": "string",
+                      "example": "payouts/2f28967f-38f9-4a96-8683-074f4ce2808x/weekly/67bc37d24a592297ab3668d2.csv",
+                    },
+                },
+            },
+        },
+      "securitySchemes":
+        {
+          "x-api-key":
+            { "type": "apiKey", "name": "x-api-key", "in": "header" },
+          "user-principal-id":
+            { "type": "apiKey", "name": "user-principal-id", "in": "header" },
+        },
+    },
+}

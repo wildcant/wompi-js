@@ -1,0 +1,1343 @@
+# Source: https://app.swaggerhub.com/apis/waybox/wompi/1.2.0
+# Refunds source: https://app.swaggerhub.com/apis/wompi/Refunds/0.0.1
+openapi: 3.0.1
+info:
+  title: Wompi API
+  description: API público para pagos seguros de Wompi.
+  contact:
+    email: noreply@wompi.co
+  version: 1.2.0
+servers:
+  - url: 'https://production.wompi.co/v1'
+  - url: 'https://sandbox.wompi.co/v1'
+externalDocs:
+  description: Wompi Docs - Inicio Rapido
+  url: https://docs.wompi.co/docs/en/inicio-rapido
+tags:
+  - name: Transacciones
+    description: Operaciones para crear y obtener información de transacciones.
+    externalDocs:
+      description: Info
+      url: https://docs.wompi.co/docs/en/metodos-de-pago
+  - name: Tokens
+    description: Tokenizar tarjetas de crédito.
+  - name: Fuentes de pago
+    description: Operaciones para crear y obtener fuentes de pago
+    externalDocs:
+      description: Info
+      url: https://docs.wompi.co/docs/en/fuentes-de-pago
+  - name: Links de pago
+    description: Operaciones para crear, actualizar y obtener links de pago
+    externalDocs:
+      description: Info
+      url: https://docs.wompi.co/docs/en/links-de-pago
+  - name: Comercios
+    description: Operaciones para comercios
+  - name: PSE
+    description: Operaciones relativas a operaciones de pago usando PSE.
+paths:
+  /payment_links/{payment_link_id}:
+    get:
+      tags:
+      - Links de pago
+      summary: Obtener un link de pago
+      description: Dato un ID de link de pago, el API retorna su información
+      parameters:
+        - name: payment_link_id
+          in: path
+          description: ID del link de pago
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Link de pago encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentLinkAll"
+        404:
+          description: Link de pago no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    patch:
+      tags:
+      - Links de pago
+      summary: Activa o desactiva un link de pago
+      description: Dado un objeto JSON con información como monto en centavos, descripción,
+        multiples pagos, etc. se crea un link de pago. Para más detalles consulta la guía completa en https://docs.wompi.co/docs/en/links-de-pago
+      parameters:
+        - name: payment_link_id
+          in: path
+          description: ID del link de pago
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Link de pago a crear
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentLinkPatch'
+        required: false
+      responses:
+        200:
+          description: Link de pago actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentLinkAll"
+        404:
+          description: Link de pago no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        422:
+          description: Entidad no procesable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+        - BearerPrivateKey: []
+  /payment_links:
+    post:
+      tags:
+      - Links de pago
+      summary: Crear un link de pago
+      description: Dado un objeto JSON con información como monto en centavos, descripción,
+        multiples pagos, etc. se crea un link de pago. Para más detalles consulta la guía completa en https://docs.wompi.co/docs/en/links-de-pago
+      requestBody:
+        description: Link de pago a crear
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+        required: false
+      responses:
+        201:
+          description: Link de pago creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentLinkAll"
+        422:
+          description: 'Entidad no procesable. Ejp: referencia duplicada, monto inválido,
+            etc.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+        - BearerPrivateKey: []
+  /payment_sources/{payment_source_id}:
+    get:
+      tags:
+      - Fuentes de pago
+      summary: Obtener una fuente de pago
+      description: Dato un ID de fuente de pago, el API retorna su información. Requiere LLAVE PRIVADA
+      parameters:
+        - name: payment_source_id
+          in: path
+          description: ID de la fuente de pago
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Fuente de pago encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentSource"
+        404:
+          description: Fuente de pago no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+      security:
+        - BearerPrivateKey: []
+  /payment_sources:
+    post:
+      tags:
+      - Fuentes de pago
+      summary: Crear una fuente de pago
+      description: Dado un tipo de medio de pago (CARD o NEQUI), un token y un token
+        de aceptación crea una fuente de pago
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentSourceNew'
+        required: false
+      responses:
+        201:
+          description: Fuente de pago creada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PaymentSource'
+        422:
+          description: Entidad no procesable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+      - BearerPrivateKey: []
+      x-codegen-request-body-name: PaymentSource
+  /transactions/{transaction_id}:
+    get:
+      tags:
+      - Transacciones
+      summary: Obtener una transacción
+      description: Dado un ID de transacción, el API retorna su información
+      parameters:
+      - name: transaction_id
+        in: path
+        description: ID de la transacción
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Transacción encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Transaction'
+        404:
+          description: Transacción no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /transactions:
+    get:
+      tags:
+      - Transacciones
+      summary: Buscar transacciones
+      description: Permite obtener un listado de transacciones
+        que coincidan con los criterios de busqueda. Requiere LLAVE PRIVADA
+      parameters:
+      - name: reference
+        in: query
+        description: Referencia de una transacción. Requerido si no se especifican from_date, until_date, page y page_size
+        schema:
+          type: string
+      - name: from_date
+        in: query
+        description: Fecha de inicio de la consulta. Requerido si no se especifica reference
+        example: "2018-07-01"
+        schema:
+          type: string
+      - name: until_date
+        in: query
+        description: Fecha final de la consulta. Requerido si no se especifica reference
+        example: "2018-07-01"
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Nùmero de página. Requerido si no se especifica reference
+        example: 1
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: Nùmero de transacciones por página. Requerido si no se especifica reference
+        example: 50
+        schema:
+          type: integer
+      - name: id
+        in: query
+        description: ID de la transacción
+        example: "1292-1602113476-10985"
+        schema:
+          type: string
+      - name: payment_method_type
+        in: query
+        schema:
+          $ref: "#/components/schemas/PaymentMethodTypes"
+      - name: status
+        in: query
+        schema:
+          $ref: "#/components/schemas/TransactionStatuses"
+      - name: customer_email
+        in: query
+        description: Email al cual se envía el comprobante de pago.
+        example: example@wompi.co
+        schema:
+          type: string
+          format: email
+      - name: order_by
+        in: query
+        description: Nombre del campo para aplicar el ordenamiento
+        example: created_at
+        schema:
+          type: string
+      - name: order
+        in: query
+        description: Orden de entrega de las transacciones
+        example: DESC
+        schema:
+          type: string
+          enum:
+          - DESC
+          - ASC 
+      responses:
+        200:
+          description: Transacciones que coincidan con los criterios de búsqueda
+          content: {}
+      security:
+      - BearerPrivateKey: []
+    post:
+      tags:
+      - Transacciones
+      summary: Crear una transacción
+      externalDocs:
+        description: Info
+        url: https://docs.wompi.co/docs/en/metodos-de-pago
+      description: Dado un objeto JSON con información como monto en centavos, referencia,
+        método de pago, etc. se crea una transacción. Para más detalles sobre el campo
+        payment_method, consulta la guía completa en https://docs.wompi.co/docs/en/metodos-de-pago
+        - En caso de usar Fuentes de Pago, debes usar la llave privada, en vez de
+        la pública.
+      requestBody:
+        description: Transacción a agregar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionNew'
+        required: false
+      responses:
+        201:
+          description: Transacción creada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Transaction'
+        422:
+          description: 'Entidad no procesable. Ejp: referencia duplicada, monto inválido,
+            etc.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+      - BearerPublicKey: []
+      x-codegen-request-body-name: transaction
+  /transactions/{transaction_id}/void:
+    post:
+      tags:
+      - Transacciones
+      summary: Anular una transacción
+      description: Anula una transacción APROBADA. Aplica únicamente para transacciones
+        con Tarjeta (tipo CARD). Requiere LLAVE
+        PRIVADA
+      parameters:
+      - name: transaction_id
+        in: path
+        description: ID de la transacción
+        required: true
+        schema:
+          type: string
+      requestBody:
+            description: Valor de la anulación
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    amount_in_cents:
+                      type: integer
+                      example: 3000000
+            required: false
+      responses:
+        201:
+          description: Transacción anulada
+          content: {}
+      security:
+      - BearerPrivateKey: []
+  /tokens/cards:
+    post:
+      tags:
+      - Tokens
+      summary: Tokenizar una tarjeta de crédito
+      description: Dado un número de tarjeta, mes de expiración, año de expiración
+        y CVC, se tokeniza una tarjeta para usarla al crear una transacción o una
+        fuente de pago. Requiere LLAVE PÚBLICA
+      requestBody:
+        description: Tarjeta a tokenizar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardNew'
+        required: false
+      responses:
+        201:
+          description: Token creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/TokenStatuses'
+                  data:
+                    $ref: '#/components/schemas/CardToken'
+        422:
+          description: Cuerpo inválido o datos de la tarjeta inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+      - BearerPublicKey: []
+      x-codegen-request-body-name: token
+  /tokens/nequi:
+    post:
+      tags:
+      - Tokens
+      summary: Tokenizar una cuenta de Nequi
+      description: Dado un número celular y un nombre completo, se tokeniza una cuenta
+        de Nequi para usarla al crear una transacción o una fuente de pago. Requiere
+        LLAVE PÚBLICA
+      requestBody:
+        description: Cuenta Nequi a tokenizar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NequiTokenNew'
+        required: false
+      responses:
+        201:
+          description: Token creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/TokenStatuses'
+                  data:
+                    $ref: '#/components/schemas/NequiToken'
+        422:
+          description: Cuerpo inválido o datos de la tarjeta inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+      - BearerPublicKey: []
+      x-codegen-request-body-name: token
+  /tokens/nequi/{token_id}:
+    get:
+      tags:
+      - Tokens
+      summary: Obtener información sobre una Cuenta de Nequi tokenizada
+      description: Dado un token de una Cuenta Nequi, se obtiene información sobre
+        si el cuentahabiente Nequi ya aceptó la Suscripción en su app móvil o no.
+        Requiere LLAVE PÚBLICA
+      parameters:
+      - name: token_id
+        in: path
+        description: Token de la Cuenta Nequi
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Información del token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NequiToken'
+        404:
+          description: Token de Cuenta Nequi no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+      security:
+      - BearerPublicKey: []
+  /merchants/{merchantPublicKey}:
+    get:
+      tags:
+      - Comercios
+      summary: Obtener un comercio y token de aceptación
+      description: Dado un token público de un comercio, se obtiene información del
+        mismo.
+      parameters:
+      - name: merchantPublicKey
+        in: path
+        description: Token público del comercio
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Comercio encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Merchant'
+        404:
+          description: Comercio no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /pse/financial_institutions:
+    get:
+      tags:
+      - PSE
+      summary: Listado de instituciones financieras de PSE.
+      description: Obtener la lista de instituciones financieras con las cuales se
+        puede hacer un pago a través de PSE. Requiere LLAVE PÚBLICA
+      responses:
+        200:
+          description: Lista instituciones financieras de PSE.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FinancialInstitution'
+      security:
+      - BearerPublicKey: []
+  # Refunds
+  /refunds:
+    post:
+      tags:
+      - Reembolsos
+      summary: Inicia un proceso de reembolso total o parcial, de una transacción aprobada (Requiere LLAVE PRIVADA)
+      description: Dado un ID de transacción y un monto, igual o menor al de una transacción previamente aprobada, se inicia una solicitud de reembolso cuya respuesta se informará a la URL De Eventos (Webhook) que haya configurado el comercio, una vez llegue a un estado final. También puede ser consultado vía API en cualquier momento, dado su ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundNew'
+        required: false
+      responses:
+        201:
+          description: Reembolso creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Refund'
+        422:
+          description: Entidad no procesable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputValidationError'
+      security:
+      - BearerPrivateKey: []
+      x-codegen-request-body-name: Refund
+  /refunds/{refund_id}:
+    get:
+      tags:
+      - Reembolsos
+      summary: Obtener información de un reembolso (Requiere LLAVE PRIVADA)
+      description: Dado un ID de reembolso y usando la llave privada como autenticación, se obtiene información del mismo.
+      security:
+      - BearerPrivateKey: []
+      parameters:
+      - name: refund_id
+        in: path
+        description: ID del reembolso
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: Reembolso encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Refund'
+        404:
+          description: Reembolso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+
+
+# Components
+components:
+  schemas:
+    TransactionNew:
+      required:
+      - acceptance_token
+      - accept_personal_auth # Added manually
+      - amount_in_cents
+      - currency
+      - customer_email
+      - reference
+      - signature
+      type: object
+      properties:
+        acceptance_token:
+          type: string
+          description: Token JWT de aceptación (ver https://docs.wompi.co/docs/en/tokens-de-aceptacion)
+          format: JWT
+          example: eyJhbGciOiJIUzI1NiJ9.eyJjb250cmFjdF9pZCI6MSwicGVybWFsaW5rIjoiaHR0cHM6Ly93b21waS5jby93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wOS9URVJNSU5PUy1ZLUNPTkRJQ0lPTkVTLURFLVVTTy1VU1VBUklPUy1XT01QSS5wZGYiLCJmaWxlX2hhc2giOiIzZGNkMGM5OGU3NGFhYjk3OTdjZmY3ODExNzMxZjc3YiIsImppdCI6IjE1ODU4NDE2MTUtNDU2MTgiLCJleHAiOjE1ODU4NDUyMTV9.bwBa-RjN3euycqeXVroLWwUN1ZRY1X11I4zn1y5nMiY
+        accept_personal_auth:
+          type: string
+          description: Token JWT de aceptación personal (ver https://docs.wompi.co/docs/en/tokens-de-aceptacion)
+          format: JWT
+          example: eyJhbGciOiJIUzI1NiJ9.eyJjb250cmFjdF9pZCI6MSwicGVybWFsaW5rIjoiaHR0cHM6Ly93b21waS5jby93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wOS9URVJNSU5PUy1ZLUNPTkRJQ0lPTkVTLURFLVVTTy1VU1VBUklPUy1XT01QSS5wZGYiLCJmaWxlX2hhc2giOiIzZGNkMGM5OGU3NGFhYjk3OTdjZmY3ODExNzMxZjc3YiIsImppdCI6IjE1ODU4NDE2MTUtNDU2MTgiLCJleHAiOjE1ODU4NDUyMTV9.bwBa-RjN3euycqeXVroLWwUN1ZRY1X11I4zn1y5nMiY
+        amount_in_cents:
+          maximum: 1E+12
+          minimum: 1
+          type: integer
+          description: Monto total en centavos de la transacción. Por ejemplo, para
+            $1.000 se escribe 100000
+          example: 3000000
+        currency:
+          type: string
+          description: Moneda en la que se va a realizar la transacción. Únicamente
+            COP actualmente.
+          example: COP
+          enum:
+          - COP
+        signature:
+          type: string
+          description: Hash criptográfico asimétrico para validar la integridad de la información de la transacción.
+          example: sk8-438k4-xmxm392-sn2m2490000COPprod_integrity_Z5mMke9x0k8gpErbDqwrJXMqsI6SFli6
+        customer_email:
+          type: string
+          description: Email al cual se envía el comprobante de pago.
+          format: email
+          example: example@wompi.co
+        payment_method:
+          type: object
+          properties: {}
+          description: "Detalles del método de pago. OBLIGATORIO si no se usa un payment_source_id.
+            Para más detalles consulta `https://docs.wompi.co/docs/en/metodos-de-pago`"
+          example:
+            type: CARD
+            token: tok_prod_280_32326B334c47Ec49a516bf1785247ba2
+            installments: 2
+        payment_source_id:
+          type: integer
+          description: ID de fuente de pago. OBLIGATORIA si no se usa un payment_method
+          example: 1234
+        redirect_url:
+          type: string
+          description: URL a la que se lleva al usuario después de hacer el pago.
+          example: https://mitienda.com.co/pago/resultado
+        reference:
+          type: string
+          description: Referencia única en la base de datos de cada comercio.
+          example: TUPtdnVugyU40XlkhixhhGE6uYV2gh89
+        expiration_time:
+          type: string
+          description: Fecha y hora en formato ISO8601 (UTC+0000), activa un contador regresivo indicando el tiempo restante para la expiración del inicio del pago.
+          example: 2023-06-09T20:28:50.000Z
+        customer_data:
+          required:
+          - full_name
+          type: object
+          properties:
+            phone_number:
+              type: string
+              description: Teléfono del pagador, incluyendo código del país
+              example: +573307654321
+            full_name:
+              type: string
+              description: Nombre completo del pagador (nombres y apellidos)
+              example: Juan Alfonso Pérez Rodríguez
+            legal_id:
+              type: string
+              description: Número de documento del pagador
+              example: "1234567890"
+            legal_id_type:
+              $ref: "#/components/schemas/LegalIdTypes"
+        shipping_address:
+          required:
+          - address_line_1
+          - city
+          - country
+          - phone_number
+          - region
+          type: object
+          properties:
+            address_line_1:
+              type: string
+              description: Datos primarios de la dirección
+              example: 'Calle 34 # 56 - 78'
+            address_line_2:
+              type: string
+              description: Datos secundarios de la dirección
+              example: Apartamento 502, Torre I
+            country:
+              type: string
+              description: País de envío en formato ISO 3166-1 Alpha-2 (2 letras mayúsculas)
+              example: CO
+            region:
+              type: string
+              description: Departamento / Estado / región (según aplique)
+              example: Cundinamarca
+            city:
+              type: string
+              description: Ciudad o municipio
+              example: Bogotá
+            name:
+              type: string
+              description: Nombre de quien recibe
+              example: Pepe Perez
+            phone_number:
+              type: string
+              description: Teléfono de la persona que recibe
+              example: +573109999999
+            postal_code:
+              type: string
+              description: Código postal
+              example: "111111"
+        recurrent:
+          type: boolean
+          description: Indica si la transacción es recurrente
+          example: true
+    CardToken:
+      type: object
+      properties:
+        id:
+          type: string
+          example: tok_prod_15_44c5638281if67l04eA63f705bfA5bde
+        created_at:
+          type: string
+          format: date-time
+          example: '2020-09-07T19:09:31.585+00:00'
+        brand:
+          type: string
+          example: VISA
+        name:
+          type: string
+          example: VISA-4242
+        last_four:
+          type: string
+          example: '4242'
+        bin:
+          type: string
+          example: '538696'
+        exp_year:
+          type: string
+          example: '29'
+        exp_month:
+          type: string
+          example: '06'
+        card_holder:
+          type: string
+          example: Pedro Pérez
+        expires_at:
+          type: string
+          format: date-time
+          example: '2021-09-05T19:09:30.000Z'
+    LegalIdTypes:
+      type: string
+      description: Tipo de documento del pagador
+      example: CC
+      enum:
+        - CC
+        - NIT
+        - PP
+        - CE
+        - TI
+        - DNI
+        - RG
+        - OTHER
+    PaymentMethodTypes:
+      type: string
+      example: NEQUI
+      enum:
+      - CARD
+      - NEQUI
+      - PSE
+      - BANCOLOMBIA
+      - BANCOLOMBIA_TRANSFER
+      - BANCOLOMBIA_COLLECT
+      - BANCOLOMBIA_QR
+    TransactionStatuses:
+      type: string
+      example: PENDING
+      enum:
+      - PENDING
+      - APPROVED
+      - DECLINED
+      - ERROR
+      - VOIDED
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 1292-1602113476-10985
+        created_at:
+          type: string
+          example: 2018-07-01 23:49:45 UTC
+        amount_in_cents:
+          type: integer
+          example: 3000000
+        status:
+          $ref: '#/components/schemas/TransactionStatuses'
+        reference:
+          type: string
+          description: Referencia única enviada por el comercio
+          example: TUPtdnVugyU40XlkhixhhGE6uYV2gh89
+        customer_email:
+          type: object
+          format: email
+          example: juan@example.com
+        currency:
+          type: string
+          description: Moneda en la que se realizó la transacción.
+          example: COP
+          enum:
+          - COP
+        payment_method_type:
+          $ref: '#/components/schemas/PaymentMethodTypes'
+        payment_method:
+          type: object
+          properties: {}
+          example:
+            type: NEQUI
+            phone_number: +573109990001
+        shipping_address:
+          type: object
+          properties: {}
+          example:
+            address_line_1: Calle 45 23 - 10
+            country: CO
+            region: Cundinamarca
+            city: Bogotá
+            phone_number: +573307654321
+        redirect_url:
+          type: string
+          example: http://mitienda.com.co/pago/redirect
+        payment_link_id:
+          type: string
+          example: null
+    NequiTokenNew:
+      required:
+      - phone_number
+      type: object
+      properties:
+        phone_number:
+          type: string
+          description: Número celular asociado a la cuenta Nequi
+          example: "3107654321"
+    NequiToken:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Token de la cuenta Nequi
+          example: nequi_prod_L90xPj1y8UJA2a0kZ03XGYx2aTkPfLP7
+        status:
+          type: string
+          example: DECLINED
+          enum:
+          - PENDING
+          - APPROVED
+          - DECLINED
+        phone_number:
+          type: string
+          description: Número de Cuenta Nequi (teléfono celular)
+          example: "3097654321"
+        name:
+          type: string
+          description: Nombre del comercio solicitante
+          example: Mi Tienda
+    CardNew:
+      required:
+      - card_holder
+      - cvc
+      - exp_month
+      - exp_year
+      - number
+      type: object
+      properties:
+        number:
+          type: string
+          description: Número completo de la tarjeta de crédito. Sin espacios, únicamente
+            números.
+          example: "4242424242424242"
+        cvc:
+          type: string
+          description: Código de seguridad de la tarjeta de crédito. También llamado
+            CVV o CSC.
+          example: "789"
+        exp_month:
+          type: string
+          description: Mes de vencimiento de la tarjeta en dos dígitos (02, 04, 11,
+            etc.).
+          example: "12"
+        exp_year:
+          type: string
+          description: Año de vencimiento de la tarjeta en dos dígitos (18, 20, 23,
+            etc.).
+          example: "29"
+        card_holder:
+          type: string
+          description: Nombre del tarjeta habiente.
+          example: Pedro Pérez
+    PaymentSourceTypes:
+      type: string
+      description: Medio de pago de la fuente. Puede ser CARD o NEQUI
+      enum:
+      - CARD
+      - NEQUI
+    PaymentSourceStatuses:
+      type: string
+      enum:
+      - AVAILABLE
+      - PENDING
+    TokenStatuses:
+      type: string
+      enum:
+      - PENDING
+      - CREATED
+    PaymentSource:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Identificador usado para hacer pagos automáticos posteriores,
+            en conjunto con la llave privada del comercio
+          example: 543
+        type:
+          $ref: '#/components/schemas/PaymentSourceTypes'
+        token:
+          type: string
+          description: Token de la Tarjeta o Cuenta Nequi tokenizada
+          example: tok_prod_280_32326B334c47Ec49a516bf1785247ba2
+        status:
+          $ref: '#/components/schemas/PaymentSourceStatuses'
+        customer_email:
+          type: string
+          description: Email del cuentahabiente o tarjetahabiente
+          example: juan@example.com
+        public_data:
+            required:
+              - type
+            type: object
+            properties:
+              type:
+                $ref: '#/components/schemas/PaymentSourceTypes'
+              phone_number:
+                type: string
+            example: { type: CARD }
+    PaymentSourceNew:
+      required:
+      - acceptance_token
+      - accept_personal_auth # Added manually
+      - customer_email
+      - token
+      - type
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/PaymentSourceTypes"
+        token:
+          type: string
+          description: Token representando la tarjeta o número Nequi
+          example: tok_prod_280_32326B334c47Ec49a516bf1785247ba2
+        acceptance_token:
+          type: string
+          description: Token JWT de aceptación (ver https://docs.wompi.co/docs/en/tokens-de-aceptacion)
+          format: JWT
+          example: eyJhbGciOiJIUzI1NiJ9.eyJjb250cmFjdF9pZCI6MSwicGVybWFsaW5rIjoiaHR0cHM6Ly93b21waS5jby93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wOS9URVJNSU5PUy1ZLUNPTkRJQ0lPTkVTLURFLVVTTy1VU1VBUklPUy1XT01QSS5wZGYiLCJmaWxlX2hhc2giOiIzZGNkMGM5OGU3NGFhYjk3OTdjZmY3ODExNzMxZjc3YiIsImppdCI6IjE1ODU4NDE2MTUtNDU2MTgiLCJleHAiOjE1ODU4NDUyMTV9.bwBa-RjN3euycqeXVroLWwUN1ZRY1X11I4zn1y5nMiY
+        accept_personal_auth:
+          type: string
+          description: Token JWT de aceptación personal (ver https://docs.wompi.co/docs/en/tokens-de-aceptacion)
+          format: JWT
+          example: eyJhbGciOiJIUzI1NiJ9.eyJjb250cmFjdF9pZCI6MSwicGVybWFsaW5rIjoiaHR0cHM6Ly93b21waS5jby93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wOS9URVJNSU5PUy1ZLUNPTkRJQ0lPTkVTLURFLVVTTy1VU1VBUklPUy1XT01QSS5wZGYiLCJmaWxlX2hhc2giOiIzZGNkMGM5OGU3NGFhYjk3OTdjZmY3ODExNzMxZjc3YiIsImppdCI6IjE1ODU4NDE2MTUtNDU2MTgiLCJleHAiOjE1ODU4NDUyMTV9.bwBa-RjN3euycqeXVroLWwUN1ZRY1X11I4zn1y5nMiY
+        customer_email:
+          type: string
+          description: Correo del pagador
+          format: email
+    PaymentLink:
+      type: object
+      required:
+        - name
+        - description
+        - single_use
+        - collect_shipping
+      properties:
+        name:
+          type: string
+          description: Nombre del link de pago
+          example: Subscripción
+        description:
+          type: string
+          description: Descripción del link de pago
+          example: Subscipción mensual
+        single_use:
+          type: boolean
+          description: "`false` en caso de que el link de pago pueda recibir múltiples transacciones APROBADAS o `true` si debe dejar de aceptar transacciones después del primer pago APROBADO"
+          example: false
+        collect_shipping:
+          type: boolean
+          description: "Si deseas que el cliente inserte su información de envío en el checkout, o no"
+          example: false
+        collect_customer_legal_id:
+          type: boolean
+          description: Si deseas o no que el cliente inserte su tipo y numero documento de identidad en el checkout
+          example: false
+        amount_in_cents:
+          maximum: 1E+12
+          minimum: 1
+          type: integer
+          description: Monto total en centavos de la transacción. Por ejemplo, para
+            $1.000 se escribe 100000.
+            Si el pago es por un monto específico se incluye, si no lo incluyes el pagador podrá elegir el valor a pagar
+          example: 1000000
+        currency:
+          type: string
+          description: Moneda en la que se va a realizar la transacción. Únicamente
+            COP actualmente.
+          example: COP
+          enum:
+          - COP
+        signature:
+          type: string
+          description: Hash criptográfico asimétrico para validar la integridad de la información de la transacción.
+          example: sk8-438k4-xmxm392-sn2m2490000COPprod_integrity_Z5mMke9x0k8gpErbDqwrJXMqsI6SFli6
+        reference:
+          type: string
+          description: Referencia única en la base de datos de cada comercio.
+          example: TUPtdnVugyU40XlkhixhhGE6uYV2gh89
+        expiration_time:
+          type: string
+          description: Fecha y hora en formato ISO8601 (UTC+0000), activa un contador regresivo indicando el tiempo restante para la expiración del inicio del pago.
+          example: 2023-06-09T20:28:50.000Z
+        sku:
+          maximum: 36
+          type: string
+          description: Identificador interno del producto en tu comercio. Máximo 36 caracteres
+          example: CDX-812345-1ADD
+        expires_at:
+          type: string
+          description: Fecha en formato ISO 8601 con huso horario UTC (+5 horas que el horario colombiano) a partir de la cual el link de pago dejará de funcionar.
+          example: "2022-12-10T14:30:00"
+        redirect_url:
+          type: string
+          description: URL donde será redirigido el cliente una vez termine el proceso de pago
+          format: url
+          example: https://micomercio.co/tienda
+        image_url:
+          type: string
+          description: Dirección de la imagen que quieras presentar en el link de pago
+          format: url
+          example: https://micomercio.co/tienda/logo
+        customer_data:
+          type: object
+          properties:
+            customer_references:
+              maxItems: 2
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    maximum: 24
+                    type: string
+                    description: Nombre del campo. Máximo 24 caracteres
+                    example: Documento de identidad
+                  is_required:
+                    type: boolean
+                    description: Si el campo a llenar es obligatorio por parte del pagador para poder realizar el pago
+                    example: true
+        taxes:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    description: Tipo de impuesto. (Valores permitidos "VAT" para IVA y "CONSUMPTION" para impuesto al consumo)
+                    example: VAT
+                    enum:
+                      - VAT
+                      - CONSUMPTION
+                  amount_in_cents:
+                    maximum: 1E+12
+                    minimum: 1
+                    type: integer
+                    description: Es el monto que representa el impuesto dentro del monto total, debes expresar el valor en centavos. $1.000 se escribe 100000
+                    example: 100000
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    description: Tipo de impuesto. (Valores permitidos "VAT" para IVA y "CONSUMPTION" para impuesto al consumo)
+                    example: VAT
+                    enum:
+                      - VAT
+                      - CONSUMPTION
+                  percentage:
+                    maximum: 50
+                    minimum: 1
+                    type: integer
+                    description: "Es el porcentaje del impuesto. Ej: 19% se escribe 19"
+                    example: 19
+    PaymentLinkAll:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: ID del link de pago
+              example: stagint_5ok3ab
+            active:
+              type: boolean
+              example: true
+        - $ref: '#/components/schemas/PaymentLink'
+        - type: object
+          properties:
+            created_at:
+              type: string
+              example: 2018-07-01 23:49:45 UTC
+            updated_at:
+              type: string
+              example: 2018-07-01 23:49:45 UTC
+    PaymentLinkPatch:
+      required:
+        - active
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: "`false` para desactivar el link de pago, de lo contrario `true`"
+          example: false
+    Merchant:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 11000
+        name:
+          type: string
+          example: Tienda del ahorro
+        legal_name:
+          type: string
+          example: Mi Tienda S.A.S.
+        legal_id:
+          type: string
+          example: 9001723102-4
+        legal_id_type:
+          type: string
+          example: NIT
+          enum:
+          - NIT
+          - CC
+        phone_number:
+          type: string
+          example: "5712134489"
+        active:
+          type: boolean
+          example: true
+        logo_url:
+          type: string
+          format: url
+          example: https://placehold.it/500x200
+        email:
+          type: string
+          format: email
+          example: admin@mitienda.com.co
+        contact_name:
+          type: string
+          example: Pedro Pérez
+        public_key:
+          type: string
+          example: pub_prod_KadoutufreGpazE1rePQngfywlNdFJW
+        accepted_payment_methods:
+          type: array
+          example:
+          - CARD
+          - NEQUI
+          - PSE
+          - BANCOLOMBIA_TRANSFER
+          - BANCOLOMBIA_COLLECT
+          items:
+            type: string
+            enum:
+            - CARD
+            - NEQUI
+            - PSE
+            - BANCOLOMBIA_TRANSFER
+            - BANCOLOMBIA_COLLECT
+        accepted_currencies:
+          type: array
+          example:
+          - COP
+          items:
+            type: string
+            enum:
+            - COP
+        presigned_acceptance:
+          type: object
+          properties:
+            acceptance_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiJ9.eyJjb250cmFjdF9pZCI6MSwicGVybWFsaW5rIjoiaHR0cHM6Ly93b21waS5jby93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wOS9URVJNSU5PUy1ZLUNPTkRJQ0lPTkVTLURFLVVTTy1VU1VBUklPUy1XT01QSS5wZGYiLCJmaWxlX2hhc2giOiIzZGNkMGM5OGU3NGFhYjk3OTdjZmY3ODExNzMxZjc3YiIsImppdCI6IjE2MDAzNzQ2MDEtMzA5MzIiLCJleHAiOjE2MDAzNzgyMDF9.J20dPsgcbIfgby-CXpjYEdvys-DZ6LYLkMfGOTpTaj4
+            permalink:
+              type: string
+              example: https://wompi.co/wp-content/uploads/2019/09/TERMINOS-Y-CONDICIONES-DE-USO-USUARIOS-WOMPI.pdf
+            type:
+              type: string
+              enum:
+              - END_USER_POLICY
+        presigned_personal_data_auth: # Added manually
+          type: object
+          properties:
+            acceptance_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiJ9.eyJjb250cmFjdF9pZCI6MSwicGVybWFsaW5rIjoiaHR0cHM6Ly93b21waS5jby93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wOS9URVJNSU5PUy1ZLUNPTkRJQ0lPTkVTLURFLVVTTy1VU1VBUklPUy1XT01QSS5wZGYiLCJmaWxlX2hhc2giOiIzZGNkMGM5OGU3NGFhYjk3OTdjZmY3ODExNzMxZjc3YiIsImppdCI6IjE2MDAzNzQ2MDEtMzA5MzIiLCJleHAiOjE2MDAzNzgyMDF9.J20dPsgcbIfgby-CXpjYEdvys-DZ6LYLkMfGOTpTaj4
+            permalink:
+              type: string
+              example: https://wompi.co/wp-content/uploads/2019/09/TERMINOS-Y-CONDICIONES-DE-USO-USUARIOS-WOMPI.pdf
+            type:
+              type: string
+              enum:
+              - END_USER_POLICY
+    FinancialInstitution:
+      type: object
+      properties:
+        financial_institution_code:
+          type: string
+          example: "1051"
+        financial_institution_name:
+          type: string
+          example: Bancolombia
+    InputValidationError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            type:
+              type: string
+              description: Tipo de error
+              example: INPUT_VALIDATION_ERROR
+            messages:
+              type: object
+              properties:
+                propiedad_invalida:
+                  type: array
+                  description: Errores de dicha propiedad
+                  example:
+                  - No está presente
+                  - No es un número entero
+                  - Debe ser mayor a 0
+                  items:
+                    type: string
+    NotFoundError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            type:
+              type: string
+              description: Tipo de error
+              example: NOT_FOUND_ERROR
+            reason:
+              type: string
+              description: Razón del error
+              example: La entidad solicitada no existe
+    # Refunds
+    RefundStatuses:
+      type: string
+      enum:
+      - PENDING
+      - APPROVED
+      - DECLINED
+      - ERROR
+    Refund:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1523
+        status:
+          $ref: '#/components/schemas/RefundStatuses'
+        amount_in_cents:
+          type: integer
+          example: 3000000
+        transaction_id:
+          type: string
+          example: 1292-1602113476-10985
+        created_at:
+          type: string
+          example: 2018-07-01 23:49:45 UTC
+    RefundNew:
+      required:
+      - transaction_id
+      - amount_in_cents
+      type: object
+      properties:
+        transaction_id:
+          type: string
+          description: ID de la transacción que se quiere reembolsar
+          example: 1292-1602113476-10985
+        amount_in_cents:
+          maximum: 1E+12
+          minimum: 1
+          type: integer
+          description: Monto total o parcial, en centavos, de la transacción a reembolsar. Por ejemplo, para
+            $10.000 se escribe 1000000
+          example: 1000000
+
+  securitySchemes:
+    BearerPublicKey:
+      type: http
+      scheme: bearer
+      bearerFormat: "Llave pública. Ejemplo: pub_prod_OwqxjcGVr0WrxrmokmGRxLn1ARy5CtIB"
+    BearerPrivateKey:
+      type: http
+      scheme: bearer
+      bearerFormat: "Llave privada. Ejemplo: prv_prod_lYE0crWWfzlLUN8FwiVIXoUVHyJtoAPm"
+x-proxy-enabled: false
